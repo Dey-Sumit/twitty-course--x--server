@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
-
+import bcrypt from 'bcryptjs'
 import { IUser } from "@libs/types";
+import UserModel from '@models/User.model'
 
 type UserDocument = IUser & Document;
 
@@ -41,4 +42,18 @@ const UserSchema = new Schema<UserDocument>(
     timestamps: true,
   }
 );
+UserSchema.methods.checkPassword = async function (enteredPassword) {
+    const user = await UserModel.findOne({ username: this.username }).select("password");
+  
+    return await bcrypt.compare(enteredPassword, user!.password);
+  };
+
+UserSchema.pre("save", async function (this, next: Function) {
+    // run only if the password field is modified (ex: during update profile)
+    if (!this.isModified("password")) {
+      next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  });
 export default mongoose.model<UserDocument>("User", UserSchema);
