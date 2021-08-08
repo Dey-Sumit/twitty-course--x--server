@@ -1,5 +1,6 @@
 import extractUser from "@libs/extractUser";
 import passport from "@middlewares/passport.middleware";
+import { validationFormatter } from "@middlewares/validator.middleware";
 import UserModel from "@models/User.model";
 import { NextFunction, Request, Response } from "express";
 
@@ -20,9 +21,20 @@ export const logout = (req: Request, res: Response) => {
   res.status(204).end();
 };
 
+/**
+ * @method POST
+ * @access Private
+ * @endpoint api/auth/signup
+ */
+
 export const signup = async (req: Request, res: Response) => {
+  const errors = validationFormatter(req).array();
+
+  if (errors.length > 0) {
+    return res.status(422).json(errors[0]);
+  }
+
   const { name, username, email, password } = req.body;
-  console.log("here");
 
   const emailExists = await UserModel.findOne({ email });
 
@@ -42,7 +54,7 @@ export const signup = async (req: Request, res: Response) => {
   // return res.status(200).json({ user });
   req.login(user, (err) => {
     if (err) throw err;
-    
+
     res.status(201).json({ user: extractUser(req.user) });
   });
 };
