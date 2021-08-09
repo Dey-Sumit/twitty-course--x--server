@@ -35,9 +35,13 @@ export const updateUserById = expressAsyncHandler(async (req: Request, res: Resp
   let profilePicture: string = "";
 
   if (req.file) {
-    const image = await cloudinary.uploader.upload(req.file.path);
-    // TODO crop if needed
+    // console.log(req.file);
+
+    const image = await cloudinary.uploader.upload(req.file.path, {
+      folder: "lol-x",
+    });
     profilePicture = image.secure_url;
+    console.log(image.secure_url, image.url);
   }
 
   const oldUser = await UserModel.findById(id);
@@ -62,4 +66,17 @@ export const updateUserById = expressAsyncHandler(async (req: Request, res: Resp
   );
 
   res.status(200).json(user);
+});
+
+
+export const searchUser = expressAsyncHandler(async (req, res) => {
+  const q = req.query?.q?.toString();
+
+  if (!q) throw new createError.BadRequest("pass the keyword");
+
+  const searchObj = {
+    $or: [{ name: { $regex: q, $options: "i" } }, { username: { $regex: q, $options: "i" } }],
+  };
+  const users = await UserModel.find(searchObj, "profilePicture name username");
+  res.status(200).json(users);
 });

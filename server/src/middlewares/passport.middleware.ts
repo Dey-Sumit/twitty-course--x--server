@@ -33,14 +33,12 @@ passport.use(
 // done is the next middleware
 // put the data(user id) into the session if login successful
 passport.serializeUser((user: any, done) => {
-  console.log("serializeUser ->", user);
   done(null, user._id);
 });
 
 // get the serialized data(user id) from the session and retrieve the user, on every request
 passport.deserializeUser(async (req: Request, id: string, done: any) => {
   try {
-    console.log("deserializeUser ->", id);
 
     const user = await findUserById(id);
 
