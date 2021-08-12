@@ -13,6 +13,7 @@ export const getUserById = expressAsyncHandler(async (req, res) => {
 
 export const deleteUserById = expressAsyncHandler(async (req: Request, res) => {
   if (req.params.id !== req.user?._id.toString()) throw new createError.Unauthorized();
+
   const user = await UserModel.findById(req.params.id);
 
   if (!user) throw new createError.NotFound();
@@ -67,7 +68,6 @@ export const updateUserById = expressAsyncHandler(async (req: Request, res: Resp
 
   res.status(200).json(user);
 });
-
 
 export const searchUser = expressAsyncHandler(async (req, res) => {
   const q = req.query?.q?.toString();
